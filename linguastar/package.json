@@ -4,11 +4,11 @@
   "private": true,
   "scripts": {
     "predev": "node -e \"if(require('fs').existsSync('.env.local')) require('fs').copyFileSync('.env.local', 'frontend/.env.local')\"",
-    "dev": "next dev frontend",
+    "dev": "cd frontend && next dev",
     "prebuild": "node -e \"if(require('fs').existsSync('.env.local')) require('fs').copyFileSync('.env.local', 'frontend/.env.local')\"",
-    "build": "next build frontend",
-    "start": "next start frontend",
-    "lint": "next lint frontend"
+    "build": "cd frontend && next build",
+    "start": "cd frontend && next start",
+    "lint": "cd frontend && next lint"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.3",

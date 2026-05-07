@@ -7,14 +7,13 @@ import { supabase } from '../../lib/supabaseClient'
 
 export default function Login() {
     const router = useRouter()
-    const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
     const [isSuccess, setIsSuccess] = useState(false)
 
-    const handleAuth = async (e) => {
+    const handleLogin = async (e) => {
         if (e) e.preventDefault()
         if (!email || !password) return
 
@@ -23,37 +22,23 @@ export default function Login() {
             setMessage('')
             setIsSuccess(false)
 
-            if (isLogin) {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email,
-                    password
-                })
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email,
+                password
+            })
 
-                if (error) throw error
-
-                if (data?.session) {
-                    setIsSuccess(true)
-                    setMessage('Successfully logged in!')
-                    setTimeout(() => router.push('/dashboard'), 800)
+            if (error) {
+                // Friendly error message for invalid credentials
+                if (error.message.includes('Invalid login credentials')) {
+                    throw new Error('Incorrect email or password. Please try again.')
                 }
-            } else {
-                const { data, error } = await supabase.auth.signUp({
-                    email,
-                    password
-                })
+                throw error
+            }
 
-                if (error) throw error
-                
-                if (data?.user?.identities?.length === 0) {
-                    setMessage('This email is already registered. Please sign in.')
-                } else if (data?.session) {
-                    setIsSuccess(true)
-                    setMessage('Account created successfully!')
-                    setTimeout(() => router.push('/dashboard'), 800)
-                } else {
-                    setIsSuccess(true)
-                    setMessage('Please check your email to verify your account.')
-                }
+            if (data?.session) {
+                setIsSuccess(true)
+                setMessage('Successfully logged in!')
+                setTimeout(() => router.push('/dashboard'), 800)
             }
         } catch (err) {
             setMessage(err.message || 'An unexpected error occurred.')
@@ -109,13 +94,13 @@ export default function Login() {
                 <div className="glass" style={{ padding: '40px', borderRadius: '24px' }}>
 
                     <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-                        {isLogin ? 'Welcome back' : 'Create an account'}
+                        Welcome back
                     </h1>
                     <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '32px' }}>
-                        {isLogin ? 'Sign in to access your premium books.' : 'Join Linguastar to start learning.'}
+                        Sign in to access your premium books.
                     </p>
 
-                    <form onSubmit={handleAuth}>
+                    <form onSubmit={handleLogin}>
                         {/* Email Input */}
                         <div style={{ marginBottom: '16px' }}>
                             <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
@@ -133,9 +118,11 @@ export default function Login() {
 
                         {/* Password Input */}
                         <div style={{ marginBottom: '24px' }}>
-                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
-                                Password
-                            </label>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <label style={{ fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+                                    Password
+                                </label>
+                            </div>
                             <input
                                 type="password"
                                 placeholder="••••••••"
@@ -176,22 +163,22 @@ export default function Login() {
                             {loading ? (
                                 <>
                                     <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
-                                    Processing...
+                                    Logging in...
                                 </>
                             ) : (
-                                isLogin ? 'Sign In' : 'Create Account'
+                                'Sign In'
                             )}
                         </button>
                     </form>
 
-                    {/* Toggle Login/Signup */}
+                    {/* Link to Signup */}
                     <div style={{ textAlign: 'center', marginTop: '24px' }}>
-                        <button
-                            onClick={() => { setIsLogin(!isLogin); setMessage(''); }}
+                        <Link
+                            href="/signup"
                             style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline' }}
                         >
-                            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
-                        </button>
+                            Don&apos;t have an account? Sign up
+                        </Link>
                     </div>
 
                     {/* Divider */}

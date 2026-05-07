@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "predev": "node -e \"require('fs').copyFileSync('.env.local', 'frontend/.env.local')\"",
+    "predev": "node -e \"if(require('fs').existsSync('.env.local')) require('fs').copyFileSync('.env.local', 'frontend/.env.local')\"",
     "dev": "next dev frontend",
-    "prebuild": "node -e \"require('fs').copyFileSync('.env.local', 'frontend/.env.local')\"",
+    "prebuild": "node -e \"if(require('fs').existsSync('.env.local')) require('fs').copyFileSync('.env.local', 'frontend/.env.local')\"",
     "build": "next build frontend",
     "start": "next start frontend",
     "lint": "next lint frontend"

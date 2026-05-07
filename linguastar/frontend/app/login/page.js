@@ -2,34 +2,61 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { supabase } from '../../lib/supabaseClient'
 
 export default function Login() {
+    const router = useRouter()
+    const [isLogin, setIsLogin] = useState(true)
     const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [message, setMessage] = useState('')
-    const [sent, setSent] = useState(false)
+    const [isSuccess, setIsSuccess] = useState(false)
 
-    const handleLogin = async () => {
+    const handleAuth = async (e) => {
+        if (e) e.preventDefault()
+        if (!email || !password) return
+
         try {
             setLoading(true)
             setMessage('')
+            setIsSuccess(false)
 
-            const { error } = await supabase.auth.signInWithOtp({
-                email,
-                options: {
-                    emailRedirectTo: `${window.location.origin}/auth/callback`
+            if (isLogin) {
+                const { data, error } = await supabase.auth.signInWithPassword({
+                    email,
+                    password
+                })
+
+                if (error) throw error
+
+                if (data?.session) {
+                    setIsSuccess(true)
+                    setMessage('Successfully logged in!')
+                    setTimeout(() => router.push('/dashboard'), 800)
                 }
-            })
-
-            if (error) {
-                setMessage(error.message)
             } else {
-                setSent(true)
-                setMessage('Check your email for the magic link!')
+                const { data, error } = await supabase.auth.signUp({
+                    email,
+                    password
+                })
+
+                if (error) throw error
+                
+                if (data?.user?.identities?.length === 0) {
+                    setMessage('This email is already registered. Please sign in.')
+                } else if (data?.session) {
+                    setIsSuccess(true)
+                    setMessage('Account created successfully!')
+                    setTimeout(() => router.push('/dashboard'), 800)
+                } else {
+                    setIsSuccess(true)
+                    setMessage('Please check your email to verify your account.')
+                }
             }
-        } catch {
-            setMessage('An unexpected error occurred. Please try again.')
+        } catch (err) {
+            setMessage(err.message || 'An unexpected error occurred.')
         } finally {
             setLoading(false)
         }
@@ -81,113 +108,104 @@ export default function Login() {
                 {/* Card */}
                 <div className="glass" style={{ padding: '40px', borderRadius: '24px' }}>
 
-                    {sent ? (
-                        // ===== SUCCESS STATE =====
-                        <div style={{ textAlign: 'center' }}>
-                            <div style={{
-                                width: '72px', height: '72px', borderRadius: '50%',
-                                background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.25)',
-                                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                fontSize: '2rem', margin: '0 auto 24px',
-                                animation: 'float 3s ease-in-out infinite',
-                            }}>
-                                ✉️
-                            </div>
-                            <h2 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '12px' }}>Check your inbox</h2>
-                            <p style={{ color: 'var(--text-secondary)', lineHeight: '1.6', marginBottom: '8px', fontSize: '0.95rem' }}>
-                                We sent a magic link to
-                            </p>
-                            <p style={{ fontWeight: '600', color: 'var(--accent-light)', marginBottom: '28px', wordBreak: 'break-all' }}>
-                                {email}
-                            </p>
-                            <button
-                                onClick={() => { setSent(false); setEmail(''); setMessage(''); }}
-                                className="btn-secondary"
-                                style={{ width: '100%' }}
-                            >
-                                Use different email
-                            </button>
+                    <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.02em' }}>
+                        {isLogin ? 'Welcome back' : 'Create an account'}
+                    </h1>
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '32px' }}>
+                        {isLogin ? 'Sign in to access your premium books.' : 'Join Linguastar to start learning.'}
+                    </p>
+
+                    <form onSubmit={handleAuth}>
+                        {/* Email Input */}
+                        <div style={{ marginBottom: '16px' }}>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+                                Email address
+                            </label>
+                            <input
+                                type="email"
+                                placeholder="you@example.com"
+                                value={email}
+                                onChange={e => setEmail(e.target.value)}
+                                className="input-dark"
+                                required
+                            />
                         </div>
-                    ) : (
-                        // ===== LOGIN FORM =====
-                        <>
-                            <h1 style={{ fontSize: '1.5rem', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.02em' }}>
-                                Sign in
-                            </h1>
-                            <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginBottom: '32px' }}>
-                                Enter your email to receive a magic link
-                            </p>
 
-                            {/* Email Input */}
-                            <div style={{ marginBottom: '16px' }}>
-                                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
-                                    Email address
-                                </label>
-                                <input
-                                    type="email"
-                                    id="email-input"
-                                    placeholder="you@example.com"
-                                    value={email}
-                                    onChange={e => setEmail(e.target.value)}
-                                    onKeyDown={e => e.key === 'Enter' && !loading && email && handleLogin()}
-                                    className="input-dark"
-                                />
+                        {/* Password Input */}
+                        <div style={{ marginBottom: '24px' }}>
+                            <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: '600', color: 'var(--text-secondary)', marginBottom: '8px', letterSpacing: '0.03em', textTransform: 'uppercase' }}>
+                                Password
+                            </label>
+                            <input
+                                type="password"
+                                placeholder="••••••••"
+                                value={password}
+                                onChange={e => setPassword(e.target.value)}
+                                className="input-dark"
+                                required
+                            />
+                        </div>
+
+                        {/* Error / Info Message */}
+                        {message && (
+                            <div style={{
+                                padding: '12px 16px',
+                                borderRadius: '10px',
+                                background: isSuccess ? 'rgba(34,197,94,0.08)' : 'rgba(239,68,68,0.08)',
+                                border: `1px solid ${isSuccess ? 'rgba(34,197,94,0.2)' : 'rgba(239,68,68,0.2)'}`,
+                                color: isSuccess ? '#4ade80' : '#f87171',
+                                fontSize: '0.85rem',
+                                marginBottom: '20px',
+                            }}>
+                                {isSuccess ? '✅ ' : '⚠️ '}{message}
                             </div>
+                        )}
 
-                            {/* Error / Info Message */}
-                            {message && !sent && (
-                                <div style={{
-                                    padding: '12px 16px',
-                                    borderRadius: '10px',
-                                    background: 'rgba(239,68,68,0.08)',
-                                    border: '1px solid rgba(239,68,68,0.2)',
-                                    color: '#f87171',
-                                    fontSize: '0.85rem',
-                                    marginBottom: '16px',
-                                }}>
-                                    ⚠️ {message}
-                                </div>
+                        {/* Submit Button */}
+                        <button
+                            type="submit"
+                            disabled={loading || !email || !password}
+                            className="btn-primary"
+                            style={{
+                                width: '100%',
+                                padding: '14px',
+                                opacity: loading || !email || !password ? 0.6 : 1,
+                                cursor: loading || !email || !password ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            {loading ? (
+                                <>
+                                    <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
+                                    Processing...
+                                </>
+                            ) : (
+                                isLogin ? 'Sign In' : 'Create Account'
                             )}
+                        </button>
+                    </form>
 
-                            {/* Submit Button */}
-                            <button
-                                id="send-otp-btn"
-                                onClick={handleLogin}
-                                disabled={loading || !email}
-                                className="btn-primary"
-                                style={{
-                                    width: '100%',
-                                    padding: '14px',
-                                    opacity: loading || !email ? 0.6 : 1,
-                                    cursor: loading || !email ? 'not-allowed' : 'pointer',
-                                    marginTop: '4px',
-                                }}
-                            >
-                                {loading ? (
-                                    <>
-                                        <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }} />
-                                        Sending...
-                                    </>
-                                ) : (
-                                    '✨ Send Magic Link'
-                                )}
-                            </button>
+                    {/* Toggle Login/Signup */}
+                    <div style={{ textAlign: 'center', marginTop: '24px' }}>
+                        <button
+                            onClick={() => { setIsLogin(!isLogin); setMessage(''); }}
+                            style={{ background: 'none', border: 'none', color: 'var(--text-secondary)', fontSize: '0.9rem', cursor: 'pointer', textDecoration: 'underline' }}
+                        >
+                            {isLogin ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+                        </button>
+                    </div>
 
-                            {/* Divider */}
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0' }}>
-                                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                                <span style={{ color: 'var(--text-muted)', fontSize: '0.75rem' }}>no password needed</span>
-                                <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
-                            </div>
+                    {/* Divider */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', margin: '24px 0' }}>
+                        <div style={{ flex: 1, height: '1px', background: 'var(--border)' }} />
+                    </div>
 
-                            {/* Back to store */}
-                            <div style={{ textAlign: 'center' }}>
-                                <Link href="/store" className="btn-ghost" style={{ width: '100%', justifyContent: 'center', color: 'var(--text-secondary)' }}>
-                                    Browse Store without signing in →
-                                </Link>
-                            </div>
-                        </>
-                    )}
+                    {/* Back to store */}
+                    <div style={{ textAlign: 'center' }}>
+                        <Link href="/store" className="btn-ghost" style={{ width: '100%', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                            Browse Store without signing in →
+                        </Link>
+                    </div>
+
                 </div>
 
                 {/* Footer text */}

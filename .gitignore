@@ -1,0 +1,9 @@
+# Global ignores for the whole workspace
+node_modules/
+.next/
+.env.local
+.DS_Store
+dist/
+build/
+coverage/
+*.log

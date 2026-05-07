@@ -21,8 +21,14 @@ export async function proxy(req) {
     )
 
     // =========================================
-    // NO TOKEN → LOGIN
+    // REDIRECTS based on Auth State
     // =========================================
+
+    const isLoginRoute = req.nextUrl.pathname.startsWith('/login')
+
+    if (isLoginRoute && token) {
+        return NextResponse.redirect(new URL('/dashboard', req.url))
+    }
 
     if (isProtected && !token) {
         return NextResponse.redirect(
@@ -91,6 +97,7 @@ export const config = {
     matcher: [
         '/dashboard/:path*',
         '/admin/:path*',
-        '/reader/:path*'
+        '/reader/:path*',
+        '/login'
     ]
 }

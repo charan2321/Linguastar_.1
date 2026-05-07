@@ -1,1 +1,1 @@
-﻿export { POST, GET, PUT, DELETE, PATCH } from '../../../../backend/api/savePurchase/route';
+export { POST } from '../../../../backend/api/savePurchase/route';

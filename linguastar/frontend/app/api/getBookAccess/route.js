@@ -1,1 +1,1 @@
-﻿export { POST, GET, PUT, DELETE, PATCH } from '../../../../backend/api/getBookAccess/route';
+export { POST } from '../../../../backend/api/getBookAccess/route';

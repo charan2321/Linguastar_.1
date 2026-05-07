@@ -113,6 +113,7 @@ export default function Login() {
                                 onChange={e => setEmail(e.target.value)}
                                 className="input-dark"
                                 required
+                                suppressHydrationWarning
                             />
                         </div>
 
@@ -130,6 +131,7 @@ export default function Login() {
                                 onChange={e => setPassword(e.target.value)}
                                 className="input-dark"
                                 required
+                                suppressHydrationWarning
                             />
                         </div>
 

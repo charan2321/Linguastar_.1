@@ -142,6 +142,7 @@ export default function Signup() {
                                         onChange={e => setName(e.target.value)}
                                         className="input-dark"
                                         required
+                                        suppressHydrationWarning
                                     />
                                 </div>
 
@@ -157,6 +158,7 @@ export default function Signup() {
                                         onChange={e => setEmail(e.target.value)}
                                         className="input-dark"
                                         required
+                                        suppressHydrationWarning
                                     />
                                 </div>
 
@@ -172,6 +174,7 @@ export default function Signup() {
                                         onChange={e => setPassword(e.target.value)}
                                         className="input-dark"
                                         required
+                                        suppressHydrationWarning
                                     />
                                 </div>
 

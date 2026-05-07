@@ -24,7 +24,9 @@ export async function proxy(req) {
     // REDIRECTS based on Auth State
     // =========================================
 
-    const isAuthRoute = req.nextUrl.pathname.startsWith('/login') || req.nextUrl.pathname.startsWith('/signup')
+    const isAuthRoute = req.nextUrl.pathname.startsWith('/login') || 
+                        req.nextUrl.pathname.startsWith('/signup') || 
+                        req.nextUrl.pathname.startsWith('/forgot-password')
 
     if (isAuthRoute && token) {
         return NextResponse.redirect(new URL('/dashboard', req.url))
@@ -99,6 +101,8 @@ export const config = {
         '/admin/:path*',
         '/reader/:path*',
         '/login',
-        '/signup'
+        '/signup',
+        '/forgot-password',
+        '/reset-password'
     ]
 }
